@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layout</title>
+<style>
+:root{
+  --pad:clamp(1rem,4vw,3rem);
+  --gap:clamp(1rem,2vw,2rem);
+  --max:1400px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font:16px/1.6 system-ui,sans-serif;color:#111;background:#fff}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+.wrap{max-width:var(--max);margin-inline:auto;padding-inline:var(--pad)}
+
+/* Header: logo left, nav right, overlays the hero */
+.site-header{position:absolute;inset:0 0 auto;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:1.25rem var(--pad);color:#fff}
+.site-header nav{display:flex;gap:1.5rem}
+
+/* Hero: full-viewport background slot */
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:flex-end;padding:var(--pad);background:#444}
+.hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* Featured collections: three items in a row, then a "see more" link */
+.featured{padding-block:clamp(3rem,8vw,7rem)}
+.featured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
+.card{display:block}
+.card-media{aspect-ratio:3/4;background:#ccc;overflow:hidden}
+.card-media img{width:100%;height:100%;object-fit:cover}
+.card-title{margin-top:.75rem;display:flex;justify-content:space-between}
+.see-more{display:block;margin-top:2rem;text-align:center}
+
+/* About: short paragraph, centered narrow column */
+.about{padding-block:clamp(3rem,8vw,7rem)}
+.about p{max-width:60ch;margin-inline:auto;text-align:center}
+
+/* Made-to-measure CTA: small label, large heading, button */
+.cta{padding-block:clamp(4rem,10vw,9rem);text-align:center}
+.cta-label{font-size:.85rem}
+.cta h2{font-size:clamp(2rem,6vw,5rem);line-height:1.05;margin:1rem 0 2rem}
+.btn{display:inline-block;padding:.9rem 2rem;border:1px solid currentColor}
+
+/* Footer: links on one side, copyright on the other */
+.site-footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;padding:2rem var(--pad)}
+.site-footer nav{display:flex;gap:1.5rem}
+
+/* Tablet and mobile */
+@media (max-width:900px){
+  .featured-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:600px){
+  .featured-grid{grid-template-columns:1fr}
+  .site-header nav{gap:1rem}
+  .site-footer{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/">Brand</a>
+  <nav aria-label="Primary">
+    <a href="/collections">Collections</a>
+    <a href="/quotation">Get a quotation</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <img class="hero-media" src="" alt="">
+  </section>
+
+  <section class="featured wrap">
+    <div class="featured-grid">
+      <a class="card" href="/collections/one">
+        <div class="card-media"><img src="" alt=""></div>
+        <div class="card-title"><span>Collection one</span></div>
+      </a>
+      <a class="card" href="/collections/two">
+        <div class="card-media"><img src="" alt=""></div>
+        <div class="card-title"><span>Collection two</span></div>
+      </a>
+      <a class="card" href="/collections/three">
+        <div class="card-media"><img src="" alt=""></div>
+        <div class="card-title"><span>Collection three</span></div>
+      </a>
+    </div>
+    <a class="see-more" href="/collections">See more</a>
+  </section>
+
+  <section class="about wrap">
+    <p>Short description of the brand goes here.</p>
+  </section>
+
+  <section class="cta wrap">
+    <p class="cta-label">Made to measure</p>
+    <h2>Headline goes here</h2>
+    <a class="btn" href="/quotation">Get a quotation</a>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <span>© Year Brand</span>
+  <nav aria-label="Footer">
+    <a href="/collections">Collections</a>
+    <a href="/quotation">Quotation</a>
+    <a href="#">Instagram</a>
+  </nav>
+</footer>
+
+</body>
+</html>

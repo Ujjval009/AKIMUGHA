@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Withnanai &amp; Akimugha Yeptho — Bridal Couture</title>
+  <meta name="description" content="Withnanai & Akimugha Yeptho is a Delhi-based bridal couture label. Made-to-measure bridal gowns focused on sublimity, storytelling and craftsmanship.">
+
+  <!-- Fonts: Lato approximates the design's clean sans; Pinyon Script for the "Ilimi" calligraphy.
+       If offline, the fallbacks below keep the layout intact. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+
+  <!-- Preload every image so nothing pops in while scrolling -->
+  <link rel="preload" as="image" href="images/hero/slide-1.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="images/hero/slide-2.webp">
+  <link rel="preload" as="image" href="images/hero/slide-3.webp">
+  <link rel="preload" as="image" href="images/ilimi-portrait.webp">
+  <link rel="preload" as="image" href="images/card-n-east-1.webp">
+  <link rel="preload" as="image" href="images/card-n-east-2.webp">
+  <link rel="preload" as="image" href="images/card-ilimi.webp">
+  <link rel="preload" as="image" href="images/our-craft.webp">
+
+  <style>
+    /* ---------------------------------------------------------------
+       Design tokens (colors / type / rhythm) — sampled from the PDF
+       --------------------------------------------------------------- */
+    :root{
+      /* Colors */
+      --bg:          #f4f5f1;   /* page background — PANTONE 11-0601 TCX "Bright White" */
+      --ink:         #33343a;   /* primary text (dark grey) */
+      --ink-soft:    #75767d;   /* secondary text, CTA headline */
+      --dark:        #101014;   /* solid CTA button, mobile menu */
+      --on-dark:     #ffffff;   /* text over photos / dark surfaces */
+      --header-bg:   rgb(255 255 255 / .92); /* scrolled header: translucent white for dark-text contrast */
+
+      /* Type */
+      --font-sans:   'Lato', system-ui, -apple-system, sans-serif;
+      --font-script: 'Pinyon Script', cursive;
+
+      /* Rhythm */
+      --pad: clamp(1rem, 4vw, 3rem);
+      --gap: clamp(1rem, 2.5vw, 2.5rem);
+      --max: 1400px;
+    }
+
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+
+    html { scroll-behavior:smooth }
+
+    body{
+      font-family:var(--font-sans);
+      font-size:16px;
+      line-height:1.7;
+      color:var(--ink);
+      background:var(--bg);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    a{ color:inherit; text-decoration:none }
+    img{ display:block; max-width:100% }
+    :focus-visible{ outline:2px solid currentColor; outline-offset:3px }
+
+    .wrap{ max-width:var(--max); margin-inline:auto; padding-inline:var(--pad) }
+
+    /* Accessible skip link */
+    .skip-link{
+      position:absolute; left:var(--pad); top:-100%;
+      z-index:100; padding:.6rem 1rem; background:var(--dark); color:var(--on-dark);
+    }
+    .skip-link:focus{ top:0 }
+
+    /* ---------------------------------------------------------------
+       Header — transparent over the hero (the PDF shows no header,
+       so this is a minimal assumption: brand + section links)
+       --------------------------------------------------------------- */
+    .site-header{
+      position:fixed; inset:0 0 auto; z-index:20;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:1.1rem var(--pad);
+      color:var(--on-dark);
+      transition:background .3s ease, color .3s ease, box-shadow .3s ease;
+    }
+    /* Solid header once scrolled, so links stay readable over light sections */
+    .site-header.is-scrolled{
+      background:var(--header-bg);
+      color:var(--ink);
+      box-shadow:0 1px 0 rgb(16 16 20 / .14);
+      backdrop-filter:blur(6px);
+    }
+    .brand{
+      font-size:1rem; font-weight:400; letter-spacing:.14em; text-transform:uppercase;
+    }
+    .site-header nav{ display:flex; gap:2rem }
+    .site-header nav a{
+      font-size:.8rem; letter-spacing:.16em; text-transform:uppercase;
+    }
+
+    /* Hamburger (mobile only) */
+    .nav-toggle{
+      display:none;
+      background:none; border:0; cursor:pointer; padding:.4rem;
+      color:inherit;
+    }
+    .nav-toggle .bar{
+      display:block; width:22px; height:1.5px; margin:5px 0;
+      background:currentColor; transition:transform .25s ease, opacity .25s ease;
+    }
+    body.nav-open .nav-toggle .bar:nth-child(1){ transform:translateY(6.5px) rotate(45deg) }
+    body.nav-open .nav-toggle .bar:nth-child(2){ opacity:0 }
+    body.nav-open .nav-toggle .bar:nth-child(3){ transform:translateY(-6.5px) rotate(-45deg) }
+
+    /* ---------------------------------------------------------------
+       Hero — full-viewport photo with centered brand name
+       (PDF slice 1: title ~55% down, subtitle beneath)
+       --------------------------------------------------------------- */
+    .hero{
+      position:relative; min-height:100vh; min-height:100svh;
+      display:flex; align-items:center; justify-content:center;
+      text-align:center; color:var(--on-dark); overflow:hidden;
+    }
+    .hero-media{
+      position:absolute; inset:0; width:100%; height:100%;
+      object-fit:cover;
+      /* per-slide crop, set from HERO_SLIDES in JS so each slide can be tuned */
+      object-position:var(--pos, center 35%);
+    }
+    /* Slideshow: every slide is always in the DOM; only opacity changes */
+    .hero-slides{ position:absolute; inset:0 }
+    .hero-slide{
+      opacity:0;
+      transition:opacity .8s ease;   /* the 0.8s crossfade */
+    }
+    .hero-slide.is-active{ opacity:1 }
+
+    /* On small screens the hero is much taller than wide, so portrait crops
+       need a lower/higher anchor than the desktop crop */
+    @media (max-width:700px){
+      .hero-media{ object-position:var(--pos-m, center 35%) }
+    }
+
+    /* subtle top-to-bottom dark gradient keeps the white title legible
+       even over bright slides */
+    .hero::after{
+      content:""; position:absolute; inset:0;
+      background:linear-gradient(180deg,
+        rgb(20 24 28 / .38) 0%,
+        rgb(20 24 28 / .10) 45%,
+        rgb(20 24 28 / .28) 100%);
+    }
+    /* soft dark halo directly behind the title block, so it stays readable
+       over white garments in the middle of the frame */
+    .hero-content::before{
+      content:""; position:absolute; inset:-1.6rem -6rem;
+      z-index:-1;
+      background:radial-gradient(60% 100% at 50% 50%,
+        rgb(16 20 24 / .34), rgb(16 20 24 / 0) 75%);
+    }
+    .hero-content{
+      position:relative; z-index:1;
+      padding:0 1rem;
+    }
+    .hero h1{
+      font-weight:300;
+      font-size:clamp(1.9rem, 4.4vw, 3.6rem);
+      letter-spacing:.05em;
+      line-height:1.15;
+    }
+    .hero-sub{
+      margin-top:.9rem;
+      font-weight:300;
+      font-size:clamp(.95rem, 1.5vw, 1.3rem);
+      letter-spacing:.22em;
+    }
+
+    /* ---------------------------------------------------------------
+       Ilimi — narrow centered portrait with script overlay
+       (PDF slice 2: "Ilimi" script ~55% down, 3 small words near bottom,
+        caption left-aligned under the image)
+       --------------------------------------------------------------- */
+    .ilimi{ padding-block:clamp(4rem, 9vw, 7.5rem) 0 }
+    .ilimi-figure{
+      position:relative;
+      width:min(370px, 82vw);
+      margin-inline:auto;
+      aspect-ratio:29 / 42; /* matches the tall portrait ratio in the PDF */
+      overflow:hidden;
+    }
+    .ilimi-figure img{ width:100%; height:100%; object-fit:cover; object-position:center top }
+
+    .ilimi-script{
+      position:absolute; left:0; right:0; top:50%;
+      text-align:center; color:var(--on-dark);
+      font-family:var(--font-script);
+      font-size:clamp(2.4rem, 5vw, 3.4rem);
+      line-height:1;
+      text-shadow:0 1px 8px rgb(0 0 0 / .35);
+    }
+    .ilimi-tags{
+      position:absolute; left:0; right:0; bottom:8.5%;
+      display:flex; justify-content:center; gap:clamp(1rem, 4vw, 2.2rem);
+      color:var(--on-dark);
+      font-size:.72rem; letter-spacing:.14em;
+      text-shadow:0 1px 6px rgb(0 0 0 / .45);
+    }
+    .ilimi-caption{
+      width:min(370px, 82vw);
+      margin:1.4rem auto 0;
+      font-size:.98rem;
+      color:var(--ink);
+    }
+
+    /* ---------------------------------------------------------------
+       Featured collections — 3-up grid, centered underlined titles
+       (PDF slice 2/3)
+       --------------------------------------------------------------- */
+    .featured{ padding-block:clamp(4rem, 10vw, 8.5rem) }
+    .featured-grid{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:var(--gap);
+    }
+    .card{ display:block; text-align:center }
+    .card-media{
+      aspect-ratio:5 / 7;   /* portrait ratio of the PDF's grid images */
+      overflow:hidden;
+      background:rgb(16 16 20 / .08); /* loading placeholder, warm-neutral over any bg */
+    }
+    .card-media img{
+      width:100%; height:100%; object-fit:cover;
+      transition:transform .6s ease;
+    }
+    .card-title{
+      display:block;
+      margin-top:1.1rem;
+      font-size:.95rem;
+      letter-spacing:.03em;
+      text-decoration:underline;
+      text-underline-offset:3px;
+      text-decoration-thickness:.7px;
+    }
+
+    /* Hover (only where the PDF shows interactive elements:
+       the underlined collection titles) */
+    .card:hover .card-title{ text-decoration-thickness:1.5px }
+    .card:hover .card-media img{ transform:scale(1.03) }
+
+    /* ---------------------------------------------------------------
+       Our Craft — full-bleed dark photo banner
+       (PDF slice 3/4: "Our Craft" centered, underlined "Discover" below)
+       --------------------------------------------------------------- */
+    .craft{
+      position:relative; min-height:100vh; min-height:100svh;
+      display:flex; align-items:center; justify-content:center;
+      text-align:center; color:var(--on-dark); overflow:hidden;
+    }
+    .craft-media{
+      position:absolute; inset:0; width:100%; height:100%;
+      object-fit:cover; object-position:center 30%;
+    }
+    .craft::after{ /* slight scrim like the hero */
+      content:""; position:absolute; inset:0;
+      background:rgb(0 0 0 / .18);
+    }
+    .craft-content{ position:relative; z-index:1; padding:0 1rem }
+    .craft h2{
+      font-weight:300;
+      font-size:clamp(2rem, 3.6vw, 3.2rem);
+      letter-spacing:.08em;
+    }
+    .craft-link{
+      display:inline-block; margin-top:1.1rem;
+      font-size:.95rem; letter-spacing:.06em;
+      text-decoration:underline;
+      text-underline-offset:4px;
+    }
+    .craft-link:hover{ text-decoration-thickness:1.5px }
+
+    /* ---------------------------------------------------------------
+       About — centered paragraph (PDF slice 4, verbatim copy)
+       --------------------------------------------------------------- */
+    .about{ padding-block:clamp(5rem, 12vw, 11rem) }
+    .about p{
+      max-width:62rem;
+      margin-inline:auto;
+      text-align:center;
+      font-size:1.02rem;
+      line-height:1.85;
+      color:var(--ink);
+    }
+
+    /* ---------------------------------------------------------------
+       Made-to-measure CTA (PDF slice 4)
+       --------------------------------------------------------------- */
+    .cta{
+      padding-block:0 clamp(5rem, 11vw, 10rem);
+      text-align:center;
+    }
+    .cta-label{
+      font-weight:700;
+      font-size:.95rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+    .cta h2{
+      margin:1.6rem 0 2.6rem;
+      font-weight:300;
+      font-size:clamp(1.25rem, 2.4vw, 1.75rem);
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      color:var(--ink-soft);
+    }
+    .btn{
+      display:inline-block;
+      padding:.85rem 1.7rem;
+      background:var(--dark);
+      color:var(--on-dark);
+      font-size:.82rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      border:1px solid var(--dark);
+      transition:background .25s ease, color .25s ease;
+    }
+    /* Hover (the only button in the design) */
+    .btn:hover{ background:transparent; color:var(--dark) }
+
+    /* ---------------------------------------------------------------
+       Footer — not present in the PDF; minimal, kept from layout.html
+       --------------------------------------------------------------- */
+    .site-footer{
+      display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
+      gap:1rem;
+      padding:2rem var(--pad);
+      border-top:1px solid rgb(0 0 0 / .07);
+      font-size:.8rem;
+      letter-spacing:.08em;
+      color:var(--ink-soft);
+    }
+    .site-footer nav{ display:flex; gap:1.5rem }
+    .site-footer a:hover{ color:var(--ink) }
+
+    /* ---------------------------------------------------------------
+       Tablet & mobile
+       --------------------------------------------------------------- */
+    @media (max-width:900px){
+      .featured-grid{ grid-template-columns:1fr 1fr }
+      /* third card spans the full row so the grid stays balanced */
+      .featured-grid .card:last-child{ grid-column:1 / -1; max-width:65%; margin-inline:auto }
+    }
+
+    @media (max-width:640px){
+      /* Collapsible nav */
+      .nav-toggle{ display:block }
+      .site-header nav{
+        position:fixed; inset:0;
+        flex-direction:column; align-items:center; justify-content:center;
+        gap:2.2rem;
+        background:rgb(16 16 20 / .96);
+        color:var(--on-dark);
+        opacity:0; visibility:hidden;
+        transition:opacity .3s ease;
+      }
+      body.nav-open .site-header nav{ opacity:1; visibility:visible; }
+      body.nav-open{ overflow:hidden }
+
+      .featured-grid{ grid-template-columns:1fr }
+      .featured-grid .card:last-child{ max-width:none; margin-inline:0 }
+
+      .site-footer{ flex-direction:column; text-align:center }
+    }
+
+    /* Respect users who prefer less motion */
+    @media (prefers-reduced-motion:reduce){
+      html{ scroll-behavior:auto }
+      .hero-slide{ transition:none }   /* slideshow shows a single static slide */
+      .card-media img, .btn, .site-header{ transition:none }
+    }
+  </style>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ================= Header ================= -->
+  <header class="site-header">
+    <a class="brand" href="#top">W &amp; A</a>
+
+    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+
+    <nav id="primary-nav" aria-label="Primary">
+      <a href="#collections">Collections</a>
+      <a href="#craft">Our Craft</a>
+      <a href="#appointment">Book Appointment</a>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <!-- ================= Hero ================= -->
+    <!-- Slides are stacked <img> elements; JS builds them from HERO_SLIDES
+         below and crossfades between them. Text stays fixed on top. -->
+    <section class="hero" id="top">
+      <div class="hero-slides"></div>
+      <div class="hero-content">
+        <h1>Withnanai &amp; Akimugha Yeptho</h1>
+        <p class="hero-sub">Bridal Couture</p>
+      </div>
+    </section>
+
+    <!-- ================= Ilimi ================= -->
+    <section class="ilimi wrap" id="ilimi">
+      <figure class="ilimi-figure">
+        <img src="images/ilimi-portrait.webp"
+             alt="Model in a white bridal gown with cascading beaded drapery, standing against a black studio backdrop"
+             width="1200" height="1800" decoding="async">
+        <figcaption class="ilimi-script" aria-hidden="true">Ilimi</figcaption>
+        <!-- the three words sit on the image in the design, kept as text -->
+        <p class="ilimi-tags"><span>Elegant</span><span>Rooted</span><span>Daring</span></p>
+      </figure>
+      <p class="ilimi-caption">Designed to look timeless forever with grace.</p>
+    </section>
+
+    <!-- ================= Featured collections ================= -->
+    <section class="featured wrap" id="collections">
+      <div class="featured-grid">
+        <a class="card" href="/collections/bride-from-the-n-east">
+          <div class="card-media">
+            <img src="images/card-n-east-1.webp"
+                 alt="Bride with white flowers in her hair wearing a sculptural cape gown with lace details, on a mottled teal backdrop"
+                 width="1200" height="1500" decoding="async">
+          </div>
+          <span class="card-title">Bride from the N-East&rsquo;</span>
+        </a>
+
+        <a class="card" href="/collections/bride-from-the-n-east-ii">
+          <div class="card-media">
+            <img src="images/card-n-east-2.webp"
+                 alt="Bride in a minimal white gown with a long cathedral veil, on a painted blue backdrop"
+                 width="1200" height="1500" decoding="async">
+          </div>
+          <span class="card-title">Bride from the N-East&rsquo;II</span>
+        </a>
+
+        <a class="card" href="/collections/ilimi">
+          <div class="card-media">
+            <img src="images/card-ilimi.webp"
+                 alt="Model in a fitted white bridal gown with sculptural drapery, on a dark backdrop"
+                 width="1200" height="1500" decoding="async">
+          </div>
+          <span class="card-title">Ilimi</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= Our Craft ================= -->
+    <section class="craft" id="craft">
+      <img class="craft-media"
+           src="images/our-craft.webp"
+           alt="Close-up of a sheer organza blouse with pearl-beaded cuffs, hands clasped, on a black background"
+           width="1920" height="1280" decoding="async">
+      <div class="craft-content">
+        <h2>Our Craft</h2>
+        <a class="craft-link" href="#craft">Discover</a>
+      </div>
+    </section>
+
+    <!-- ================= About ================= -->
+    <section class="about wrap" id="about">
+      <p>
+        Withnanai &amp; Akimugha Yeptho is a Bridal couture Label established in 2026 by Angela
+        Lalramtiami and Akimugha Yeptho Delhi based designer, The brand focuses on Sublimity,
+        Story telling, Craftsmanship and the intricacy of dressmaking. Up to the present time,
+        they have worked with numerous brides for various custom-made bridal dresses, along with
+        their work been seen on the Digital Cover of Vogue India Sept issue, and published in
+        various Fashion magazines and fashion platforms.
+      </p>
+    </section>
+
+    <!-- ================= Made-to-measure CTA ================= -->
+    <section class="cta wrap" id="appointment">
+      <p class="cta-label">Made to Measure Bridal Couture</p>
+      <h2>Lets measure your dream bridal gown</h2>
+      <a class="btn" href="/quotation">Book Your Appointment</a>
+    </section>
+
+  </main>
+
+  <!-- ================= Footer (assumed — not shown in the PDF) ================= -->
+  <footer class="site-footer">
+    <span>&copy; 2026 Withnanai &amp; Akimugha Yeptho</span>
+    <nav aria-label="Footer">
+      <a href="#collections">Collections</a>
+      <a href="#appointment">Appointment</a>
+      <a href="#" rel="noopener">Instagram</a>
+    </nav>
+  </footer>
+
+  <script>
+    // --- Header: solid background once scrolled past the top ---
+    const header = document.querySelector('.site-header');
+    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 24);
+    addEventListener('scroll', onScroll, { passive:true });
+    onScroll();
+
+    // --- Mobile nav toggle ---
+    const toggle = document.querySelector('.nav-toggle');
+    toggle.addEventListener('click', () => {
+      const open = document.body.classList.toggle('nav-open');
+      toggle.setAttribute('aria-expanded', open);
+    });
+
+    // Close the menu when a nav link is chosen
+    document.querySelectorAll('.site-header nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.body.classList.remove('nav-open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // --- Hero slideshow -----------------------------------------------------
+    // One array drives the whole slideshow:
+    //   src    – slide file (WebP, max 1920px wide, <300KB)
+    //   pos    – desktop crop anchor (object-position), tuned per slide
+    //   pos-m  – mobile crop anchor, used under 700px
+    // Slide 1 is always the original teal-wall hero; the rest follow in
+    // filename order from headerhero/.
+    const HERO_SLIDES = [
+      { src:'images/hero/slide-1.webp', width:1920, height:2400, pos:'center 35%', posM:'50% 30%',
+        alt:'Bride in a white peplum gown with satin ribbons, photographed against a mottled teal wall' },
+      { src:'images/hero/slide-2.webp', width:1920, height:1172, pos:'center 40%', posM:'70% 40%',
+        alt:'Model seen from behind in a sculptural white collar gown, on a bright white backdrop' },
+      { src:'images/hero/slide-3.webp', width:1920, height:2453, pos:'42% 42%', posM:'38% 30%',
+        alt:'Model in a grey-plaid corset gown with lace collar, against a white studio backdrop' },
+    ];
+    const SLIDE_INTERVAL = 3000; // how long each slide stays visible
+    const SLIDE_FADE     = 800;  // crossfade duration (keep in sync with the CSS)
+
+    const slidesBox  = document.querySelector('.hero-slides');
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Stack every slide in the DOM once (no src swapping later, only opacity).
+    // pos/pos-m become CSS variables that set each slide's object-position.
+    const slides = HERO_SLIDES.map((slide, i) => {
+      const img = document.createElement('img');
+      img.className = 'hero-media hero-slide';
+      img.src = slide.src;
+      img.alt = slide.alt;
+      img.width = slide.width;
+      img.height = slide.height;
+      img.decoding = 'async';
+      img.style.setProperty('--pos',  slide.pos);
+      img.style.setProperty('--pos-m', slide.posM);
+      if (i === 0) img.setAttribute('fetchpriority', 'high'); // first paint ASAP
+      slidesBox.appendChild(img);
+      return img;
+    });
+
+    // A slide that fails to load (missing file, bad name) is skipped by the
+    // rotation instead of leaving a blank hero on screen
+    slides.forEach(img => img.addEventListener('error', () => {
+      console.warn('Hero slideshow: could not load ' + img.src + ' — skipping that slide.');
+      img.dataset.broken = 'true';
+      img.remove();
+    }, { once:true }));
+
+    // Track which slides have finished loading so we never show a half-loaded frame
+    const ready = new Set();
+    slides.forEach((img, i) => {
+      img.complete && img.naturalWidth ? ready.add(i)
+                                       : img.addEventListener('load', () => ready.add(i), { once:true });
+    });
+
+    let current = 0;
+    let timer = null;
+
+    // Crossfade to slide i: it fades IN over the previous slide, which is
+    // only faded out once the fade completes, so the blend always looks smooth
+    function show(i) {
+      const prev = slides[current];
+      slides[i].classList.add('is-active');
+      setTimeout(() => prev.classList.remove('is-active'), SLIDE_FADE);
+      current = i;
+    }
+
+    // Advance to the next slide that still exists, waiting for it to finish
+    // loading before it appears
+    function nextSlide() {
+      const live = slides.filter(img => img.isConnected);
+      if (live.length <= 1) return;                 // nothing to rotate through
+      const idx = live.indexOf(slides[current]);
+      const next = live[(idx + 1) % live.length];
+      const go = () => show(slides.indexOf(next));
+      ready.has(slides.indexOf(next))
+        ? go()
+        : next.addEventListener('load', go, { once:true });
+    }
+
+    function startTimer() {
+      if (!timer && !reduceMotion) timer = setInterval(nextSlide, SLIDE_INTERVAL);
+    }
+    function stopTimer() {
+      clearInterval(timer);
+      timer = null;
+    }
+
+    // Show the first slide as soon as it is ready, then begin the rotation
+    slides[0].addEventListener('load', () => {
+      ready.add(0);
+      slides[0].classList.add('is-active');
+      startTimer();
+    }, { once:true });
+
+    // Pause the rotation while the tab is hidden, resume when visible again
+    document.addEventListener('visibilitychange', () => {
+      document.hidden ? stopTimer() : startTimer();
+    });
+    // With reduced motion: only the first image is ever shown, no rotation.
+    // If the folder were missing (slide 1 fails), the hero falls back to the
+    // plain background with a console warning — never a broken layout.
+  </script>
+
+</body>
+</html>
